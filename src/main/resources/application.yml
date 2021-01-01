@@ -1,0 +1,61 @@
+spring:
+  #thymeleaf
+  mvc:
+    static-path-pattern: static/**
+    view:
+      prefix: /jsps/
+      suffix: .jsp
+  #配置数据源
+  datasource:
+    username: root
+    password: root
+    url: jdbc:mysql://localhost/double_eleven?serverTimezone=Asia/Shanghai&characterEncoding=utf-8
+    driver-class-name: com.mysql.jdbc.Driver
+    initialization-mode: always
+  #配置文件上传
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  #热部署
+  devtools:
+    restart:
+      #修改代码后不重启服务器
+      enabled: false
+  # 设置默认访问路径
+  resources:
+    static-locations: classpath:/META-INF/resources/,classpath:/resources/,classpath:/static/,classpath:/public/,classpath:/templates/
+  #配置redis连接信息
+  redis:
+    host: 127.0.0.1
+    port: 6379
+
+mybatis:
+  config-location: classpath:mybatis/mybatis-config.xml
+  mapper-locations: classpath:mybatis/mapper/*.xml
+  type-aliases-package: com.bgs.pojo
+#mybatis-plus:
+#  mapper-locations: classpath:mybatis/mapper/*.xml
+#  type-aliases-package: com.bgs.pojo
+#mybatis分页插件
+pagehelper:
+  helperDialect: mysql
+  reasonable: true
+  supportMethodsArguments: true
+  params: count=countSql
+#配置服务器端口号
+server:
+  port: 8888
+  #配置项目虚拟目录
+  servlet:
+    context-path: /double_eleven
+#配置文件上传路径
+file:
+  #存储到本地硬盘的路径
+  uploadFolder: E://springbootfile/
+  # 对外访问的资源路径（有项目虚拟目录的话，要加上虚拟目录 /double_eleven 切记）
+  staticAccessPath: /fileImg/**
+#打印sql日志
+logging:
+  level:
+    com.bgs.dao: debug

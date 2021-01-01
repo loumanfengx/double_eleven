@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgs.dao.BillMapper">
+    <resultMap id="billAndUser" type="com.bgs.pojo.Bill">
+        <id property="id" column="id"/>
+        <result property="createTime" column="createTime"/>
+        <result property="totalPrice" column="totalPrice"/>
+        <result property="isPayment" column="isPayment"/>
+        <result property="orderId" column="orderId"/>
+        <result property="flag" column="flag"/>
+        <association property="user" javaType="com.bgs.pojo.User">
+            <id column="id" property="id"/>
+            <result property="address" column="address"/>
+            <result property="userName" column="userName"/>
+            <result property="phone" column="phone"/>
+        </association>
+    </resultMap>
+    <!--删除订单时恢复商品库存-->
+    <update id="restoreInventory">
+        update product set inventory = #{restoreInventory}
+        where id = #{id}
+    </update>
+    <!--删除订单（逻辑删除）-->
+    <delete id="delBill">
+        update bill set flag = 0
+        where id in
+        <foreach collection="ids" item="id" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+    </delete>
+    <select id="findAll" resultMap="billAndUser">
+        SELECT u.userName,u.address, b.isPayment,b.id,b.orderId,b.totalPrice,b.createTime,b.flag,u.phone
+        from shops s, bill b
+        INNER JOIN `user` u on b.uid = u.id
+        <where>
+            <if test="sid != null and sid != 0">
+                and s.id = #{sid}
+            </if>
+            <if test="userName != null and userName != ''">
+                and u.userName like "%"#{userName}"%"
+            </if>
+            <if test="isPayment != null">
+                and b.isPayment = #{isPayment}
+            </if>
+            <if test="sid != null and sid != 0">
+                and s.id = #{sid}
+            </if>
+            <if test="startTime != null and startTime != '' and endTime != null and endTime != ''">
+                and createTime between #{startTime} and #{endTime}
+            </if>
+            <if test="flag != null">
+                and b.flag = #{flag}
+            </if>
+            <if test="province != null and province != ''">
+                and u.address like "%"#{province}"%"
+            </if>
+            <if test="city != null and city != ''">
+                and u.address like "%"#{city}"%"
+            </if>
+            <if test="district != null and district != ''">
+                and u.address like "%"#{district}"%"
+            </if>
+            order by orderId asc
+        </where>
+    </select>
+    <resultMap id="productAndCategory" type="com.bgs.pojo.Product">
+        <id column="id" property="id"/>
+        <result property="category" column="category"/>
+        <result property="productCode" column="productCode"/>
+        <result property="productName" column="productName"/>
+        <result property="productUnit" column="productUnit"/>
+        <result property="productPrice" column="productPrice"/>
+        <result property="inventory" column="inventory"/>
+        <result property="description" column="description"/>
+        <result property="productCount" column="productCount"/>
+        <association property="categorys" javaType="com.bgs.pojo.Category">
+            <result property="category" column="cate"></result>
+        </association>
+
+    </resultMap>
+    <!--查看订单详细信息-->
+    <select id="findBillInfo" resultMap="productAndCategory">
+        SELECT p.*,c.category cate,bp.productCount
+        FROM bill b
+        INNER JOIN bill_product bp on b.id = bp.bid
+        INNER JOIN product p on bp.pid = p.id
+        INNER JOIN category c on p.category = c.id
+        <if test="bid != null and bid != 0">
+            where b.id = #{bid}
+        </if>
+        order by productCode asc
+    </select>
+</mapper>

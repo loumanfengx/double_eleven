@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgs.dao.ShopsMapper">
+    <!--添加商户-->
+    <insert id="addShops">
+        insert  into shops(shopsCode, shopsPassword, shopsName)
+        values (#{shops.shopsCode},#{shops.shopsPassword},#{shops.shopsName})
+    </insert>
+    <!--修改商户信息-->
+    <update id="updateShopsInfo">
+        update shops set shopsName = #{shops.shopsName}, phone = #{shops.phone} where id = #{shops.id}
+    </update>
+    <!--修改商户密码-->
+    <update id="updatePassword">
+        update shops set shopsPassword = #{newPassword} where shopsCode = #{shopsCode}
+    </update>
+    <!--登录验证-->
+    <select id="checkShopsCode" resultType="com.bgs.pojo.Shops">
+        SELECT * from shops where shopsCode = #{shopsCode}
+    </select>
+</mapper>

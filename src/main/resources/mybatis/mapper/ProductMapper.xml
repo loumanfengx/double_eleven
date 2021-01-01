@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.bgs.dao.ProductMapper">
+    <resultMap id="productAndCategory" type="com.bgs.pojo.Product">
+        <id column="id" property="id"/>
+        <result property="category" column="category"/>
+        <result property="productCode" column="productCode"/>
+        <result property="productName" column="productName"/>
+        <result property="productUnit" column="productUnit"/>
+        <result property="productPrice" column="productPrice"/>
+        <result property="inventory" column="inventory"/>
+        <result property="description" column="description"/>
+        <result property="pic" column="pic"/>
+        <association property="categorys" javaType="com.bgs.pojo.Category">
+            <result property="category" column="cate"></result>
+        </association>
+    </resultMap>
+
+    <!--添加商品-->
+    <insert id="addProduct" parameterType="com.bgs.pojo.Product" useGeneratedKeys="true" keyProperty="id">
+        insert into product(productCode,productName,productPrice,productUnit,inventory,category,description,pic)
+        values (#{productCode},#{productName},#{productPrice},#{productUnit},#{inventory},#{category},#{description},#{pic})
+    </insert>
+    <!--向商家商品中间表添加 商品添加成功后的商品主键id-->
+    <insert id="addShopsProduct">
+        insert into shops_product(sid,pid) values(#{sid},#{pid})
+    </insert>
+    <!--修改商品信息-->
+    <update id="updateProduct">
+        update product set
+        <if test="product.productName != null and product.productName != ''">
+            productName = #{product.productName},
+        </if>
+        <if test="product.productPrice != null and product.productPrice != 0">
+            productPrice = #{product.productPrice},
+        </if>
+        <if test="product.productUnit != null and product.productUnit != ''">
+            productUnit = #{product.productUnit},
+        </if>
+        <if test="product.inventory != null and product.inventory != 0">
+            inventory = #{product.inventory},
+        </if>
+        <if test="product.category != null and product.category != 0">
+            category = #{category},
+        </if>
+        <if test="product.description != null and product.description != ''">
+            description = #{product.description}
+        </if>
+        where id = #{product.id}
+    </update>
+    <!--批量删除数据商品表数据-->
+    <delete id="delProduct" parameterType="java.util.List">
+        delete from product where id in
+        <foreach collection="array" item="ids" open="(" separator="," close=")">
+            #{ids}
+        </foreach>
+    </delete>
+    <!--批量删除数据商家商品中间表数据-->
+    <delete id="delShopsMiddleProduct" >
+        delete from shops_product where pid in
+        <foreach collection="pids" item="pid" open="(" separator="," close=")">
+            #{pid}
+        </foreach>
+    </delete>
+    <!--查询商品列表-->
+    <select id="findAll" resultMap="productAndCategory">
+        SELECT p.*,c.category cate FROM shops s inner JOIN shops_product sp on s.id = sp.sid
+        inner JOIN product p on sp.pid = p.id
+        inner JOIN category c on p.category = c.id
+        <where>
+            <if test="productName != null and productName != ''">
+                and p.productName like "%"#{productName}"%"
+            </if>
+            <if test="productCode != null and productCode != ''">
+                and p.productCode = #{productCode}
+            </if>
+            <if test="category != '' and category != null">
+                and p.category = #{category}
+            </if>
+            <if test="sid != null and sid != 0">
+                and s.id = #{sid}
+            </if>
+            order by productCode asc
+        </where>
+    </select>
+    <!--查询某个商品详细信息-->
+    <select id="findProductInfo" resultMap="productAndCategory">
+        SELECT p.*,c.category cate from product p LEFT JOIN category c on p.category = c.id where p.id = #{id}
+    </select>
+    <!--获取添加信息前的商家id和名称-->
+    <select id="findShopsAll" resultType="com.bgs.pojo.Shops">
+        SELECT * from shops
+    </select>
+    <!--获取商品类别表-->
+    <select id="findCategoryAll" resultType="com.bgs.pojo.Category">
+        SELECT * from category
+    </select>
+</mapper>
